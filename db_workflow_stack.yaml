@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Glue DataBrew Workflow Blueprint (imports infra resources)
+
+Resources:
+  DataCleaningRecipe:
+    Type: AWS::DataBrew::Recipe
+    Properties:
+      Name: databrew-cleaning-recipe
+      Description: Adds padded age column, sorts descending, and extracts substring from name.
+      Steps:
+        - Action:
+            Operation: ADD
+            Parameters:
+              functionStepType: ADD
+              sourceColumn1: age
+              targetColumn: age_padded
+              value2: "100"
+        - Action:
+            Operation: SORT
+            Parameters:
+              expressions: >-
+                [{"sourceColumn":"age_padded","ordering":"DESCENDING","nullsOrdering":"NULLS_BOTTOM","customOrder":[]}]
+        - Action:
+            Operation: SUBSTRING
+            Parameters:
+              endPosition: "3"
+              functionStepType: SUBSTRING
+              ignoreCase: "false"
+              pattern: "3"
+              sourceColumn: name
+              startPosition: "1"
+              targetColumn: name_SUBSTRING
+
+  DataCleaningProject:
+    Type: AWS::DataBrew::Project
+    Properties:
+      Name: databrew-cleaning-lab
+      DatasetName: !ImportValue databrew-job-SampleDatasetName
+      RecipeName: !Ref DataCleaningRecipe
+      RoleArn: !ImportValue databrew-job-DataBrewServiceRoleArn
+      Sample:
+        Type: FIRST_N
+        Size: 500
+
+  DataCleaningJob:
+    Type: AWS::DataBrew::Job
+    Properties:
+      Name: databrew-cleaning-job
+      Type: RECIPE
+      RoleArn: !ImportValue databrew-job-DataBrewServiceRoleArn
+      ProjectName: !Ref DataCleaningProject
+      Outputs:
+        - Location:
+            Bucket: !ImportValue databrew-job-DataBrewBucketName
+            Key: cleaned-data/
+          Format: CSV

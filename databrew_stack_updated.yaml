@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Infrastructure Blueprint for DataBrew Pipeline
+
+Resources:
+  DataBrewBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub databrew-lab-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration:
+        Status: Enabled
+
+  DataBrewServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: databrew.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+  SampleDataset:
+    Type: AWS::DataBrew::Dataset
+    Properties:
+      Name: databrew-sample-dataset
+      Format: CSV
+      Input:
+        S3InputDefinition:
+          Bucket: !Ref DataBrewBucket
+          Key: sample-data.csv
+
+# =====================================================
+# 🔁 Exports for downstream stacks
+# =====================================================
+
+Outputs:
+  DataBrewBucketName:
+    Description: Name of the S3 bucket for input/output
+    Value: !Ref DataBrewBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-DataBrewBucketName
+
+  SampleDatasetName:
+    Description: Name of the DataBrew dataset
+    Value: !Ref SampleDataset
+    Export:
+      Name: !Sub ${AWS::StackName}-SampleDatasetName
+
+  DataBrewServiceRoleArn:
+    Description: ARN of the DataBrew service role
+    Value: !GetAtt DataBrewServiceRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-DataBrewServiceRoleArn

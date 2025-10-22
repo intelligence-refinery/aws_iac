@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Core S3 Buckets for data lake and infrastructure
+
+Parameters:
+  OrgPrefix:
+    Type: String
+    Default: ir
+    Description: Prefix for bucket names (keeps them unique)
+
+Resources:
+  RawDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${OrgPrefix}-raw-data-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration: { Status: Enabled }
+
+  StagedDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${OrgPrefix}-staged-data-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration: { Status: Enabled }
+
+  AnalyticsDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${OrgPrefix}-analytics-${AWS::AccountId}-${AWS::Region}
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${OrgPrefix}-infra-artifacts-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration: { Status: Enabled }
+
+  LogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${OrgPrefix}-logs-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration: { Status: Enabled }
+
+Outputs:
+  RawDataBucketName:
+    Value: !Ref RawDataBucket
+    Export: { Name: !Sub ${AWS::StackName}-RawDataBucketName }
+  StagedDataBucketName:
+    Value: !Ref StagedDataBucket
+    Export: { Name: !Sub ${AWS::StackName}-StagedDataBucketName }
+  AnalyticsDataBucketName:
+    Value: !Ref AnalyticsDataBucket
+    Export: { Name: !Sub ${AWS::StackName}-AnalyticsDataBucketName }
+  ArtifactBucketName:
+    Value: !Ref ArtifactBucket
+    Export: { Name: !Sub ${AWS::StackName}-ArtifactBucketName }
+  LogsBucketName:
+    Value: !Ref LogsBucket
+    Export: { Name: !Sub ${AWS::StackName}-LogsBucketName }

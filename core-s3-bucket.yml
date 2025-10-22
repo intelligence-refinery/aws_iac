@@ -1,0 +1,3 @@
+template-file-path: core-s3-bucket.yml
+parameters: {}
+tags: {}
